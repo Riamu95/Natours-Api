@@ -1,8 +1,12 @@
 const exp = require('express');
 const { getAllTours, addTour, getTour,
-updateTour, deleteTour} = require('../controllers/tourController');
+updateTour, deleteTour, checkID} = require('../controllers/tourController');
 
 const router = exp.Router();
+
+router.param('id' , ( req, res, next, val) => {
+  checkID(req,res,next,val);
+});
 
 router.route('/')
   .get(getAllTours)

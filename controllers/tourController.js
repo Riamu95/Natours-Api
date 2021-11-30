@@ -4,6 +4,20 @@ const tours = JSON.parse(
     fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
 );
 
+//check id middleware
+exports.checkID = (req,res,next,val) => {
+    
+    if(val > tours.length -1)
+    {
+        return res.status(404).json({
+            status : ' Fail',
+            message : ' Invalid ID'
+        });
+    }
+
+    next();
+};
+
 exports.getAllTours = (req, res) => {
     res.status(200).json({
       status: "success:",
@@ -36,11 +50,9 @@ fs.writeFile(`${__dirname}/dev-data/data/tours-simple.json`, JSON.stringify(tour
 }
   
 exports.getTour = (req,res) => {
-const id = parseInt(req.params.id);
 
-tours[id] === undefined ? 
-res.status(404).send("Tour Does Not Exist")
-    :
+const id = req.params.id;
+
 res.status(200).json({
     status: "success:",
     data: {
@@ -55,7 +67,7 @@ exports.updateTour = (req,res) => {
 const id = req.params.id;
 const key = Object.keys(req.body)[0];
 
-if(id > tours.length -1 ||  !tours[id].hasOwnProperty(`${key}`))
+if(!tours[id].hasOwnProperty(`${key}`))
     res.status(404).send("Property Does Not Exist");
 
 const value =  Object.values(req.body)[0];
@@ -70,16 +82,12 @@ res.status(201).json({
 }
   
 exports.deleteTour = (req,res) =>  {
-const id = parseInt(req.params.id);
+    
+    const id = req.params.id;
 
-if(id <= tours.length -1)
-{
     tours.splice(id, 1);
     res.status(204).json({
     status : " Success",
     data : null
     }); 
-}
-else
-    res.status(404).send('Tour does not exist');
 }
