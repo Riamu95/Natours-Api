@@ -1,14 +1,17 @@
-const { application } = require('express');
-const express = require('express');
+const express = require("express");
+const morgan = require('morgan');
 
-const server = express();
-const port = 3000;
+const app = express();
 
-server.get('/' , (req, res ) => {
-    res.status(200).send("Hello from the server");
-});
+const tourRouter = require(`${__dirname}/routes/tourRouter`);
+const userRouter = require(`${__dirname}/routes/userRoutes`);
 
+//1) MIDDLEWARES
+app.use(morgan('dev'));
+app.use(express.json());
 
-server.listen(3000, () => {
-    console.log(`Listening on Port ${port}`);
-});
+//2)ROUTES
+app.use('/api/v1/tours', tourRouter);
+app.use('/api/v1/users', userRouter);
+
+module.exports = app;
