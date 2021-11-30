@@ -1,6 +1,6 @@
 const exp = require('express');
 const { getAllTours, addTour, getTour,
-updateTour, deleteTour, checkID} = require('../controllers/tourController');
+updateTour, deleteTour, checkID, checkBody} = require('../controllers/tourController');
 
 const router = exp.Router();
 
@@ -10,7 +10,8 @@ router.param('id' , ( req, res, next, val) => {
 
 router.route('/')
   .get(getAllTours)
-  .post(addTour);
+  .post(checkBody, addTour);
+
 
 router.route('/:id')
   .get(getTour)

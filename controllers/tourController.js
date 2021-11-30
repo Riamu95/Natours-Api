@@ -4,7 +4,18 @@ const tours = JSON.parse(
     fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
 );
 
-//check id middleware
+exports.checkBody = ( req, res, next) => {
+   
+    if(!req.body.name || !req.body.price)
+    {
+       return res.status(404).json({
+            status : "Failure",
+            message : "Please add Name and Price"
+        });
+    }
+    next();
+};
+
 exports.checkID = (req,res,next,val) => {
     
     if(val > tours.length -1)
@@ -28,13 +39,13 @@ exports.getAllTours = (req, res) => {
 }
   
 exports.addTour = (req,res) => {
-
+    console.log('Howe');
 const newId = tours[tours.length - 1].id + 1;
 
 const newTour = Object.assign({ id : newId }, req.body);
 tours.push(newTour);
 
-fs.writeFile(`${__dirname}/dev-data/data/tours-simple.json`, JSON.stringify(tours), ( err) => { 
+fs.writeFile(`${__dirname}/../dev-data/data/tours-simple.json`, JSON.stringify(tours), ( err) => { 
     if(err)
     {
         console.log(err);
