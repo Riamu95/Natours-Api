@@ -4,13 +4,10 @@ updateTour, deleteTour, checkID, checkBody} = require('../controllers/tourContro
 
 const router = exp.Router();
 
-router.param('id' , ( req, res, next, val) => {
-  checkID(req,res,next,val);
-});
 
 router.route('/')
   .get(getAllTours)
-  .post(checkBody, addTour);
+  .post(addTour);
 
 
 router.route('/:id')
