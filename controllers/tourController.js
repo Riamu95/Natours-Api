@@ -2,9 +2,95 @@ const fs = require("fs");
 const Tour = require("./../models/tour.model");
 const tourModel = require("./../models/tour.model");
 
+
+
+
+class APIFeatures {
+    
+    constructor(query, queryString)
+    {
+        this.query = query;
+        this.queryString = queryString;
+    }
+
+    filter()
+    {
+        const queryObj = {...this.queryString};
+        //REMOVE INITAL POST QUERY FILTERS
+        const excludedFields = ['page', 'sort','limit', 'fields'];
+        excludedFields.forEach(el => delete queryObj[el]);
+       
+       //FILTER QUERY STRING TO ALLOW OPERATORS IN QUERY COMMAND, i.e. add '$' to OPERATOR QUERY STRING
+        let queryStr  = JSON.stringify(queryObj);
+        queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
+        this.query = this.query.find(JSON.parse(queryStr));
+
+        return this;
+    }
+
+    sort()
+    {
+        if(this.queryString.sort) {
+            const queryObj = this.queryString.sort.split(',').join(' ');
+            this.query = this.query.sort(queryObj);
+
+        }else 
+        {
+           this.query = this.query.sort('-createdAt');
+        }
+
+        return this;
+    }
+
+    limitFields()
+    {
+        if(this.queryString.fields)
+        {
+            const fields = this.queryString.fields.split(',').join(' ');
+            this.query = this.query.select(fields);
+        }
+        else {
+            this.query = this.query.select('-__v');
+        }
+
+        return this;
+    }
+
+    pagination()
+    {
+         //4) Pagination
+         const page = this.queryString.page * 1 || 1;
+         const limit = this.queryString.limit * 1 || 100;
+ 
+         const skip = (page - 1) * limit;
+       
+         this.query = this.query.skip(skip).limit(limit);
+         
+        return this;
+    }
+} 
+
+
 exports.getAllTours =  async (req, res) => {
+    
     try {
-        const result = await Tour.find();
+        //RETURNS QUERY OBJECT
+        const features = new APIFeatures(Tour.find(), req.query)
+        .filter()
+        .sort()
+        .limitFields()
+        .pagination();
+        /*
+        const numberOfDocs = await Tour.count();
+ 
+        if(skip >= numberOfDocs)
+        {
+            throw new Error('No Documents left');
+        }
+        */
+
+        //EXECUTES QUERY OBJECT
+        const result = await features.query;
         res.status(200).json(result);
     }
     catch (err) {
@@ -69,8 +155,20 @@ exports.updateTour = async(req,res) => {
    
 };
   
-exports.deleteTour = (req,res) =>  {
-    
+exports.deleteTour = async (req,res) =>  {
+    try {
+        const result = await Tour.findByIdAndDelete(req.params.id);
+        res.status(200).json({
+            status : 'Success',
+            data : result
+        });
+    }
+    catch(err){
+        res.status(404).json({
+            status : 'Success',
+            data : err
+        });
+    };
 };
 
 
